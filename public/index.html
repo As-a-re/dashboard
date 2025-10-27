@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gravity Hub - API Tester</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        input, button, textarea {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .response {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background: #f1f1f1;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            margin-right: 5px;
+            border-radius: 4px 4px 0 0;
+        }
+        .tab.active {
+            background: white;
+            border-bottom: 1px solid white;
+            margin-bottom: -1px;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>Gravity Hub - API Tester</h1>
+    
+    <div class="tabs">
+        <div class="tab active" onclick="showTab('register')"><i class="fas fa-user-plus"></i> Register</div>
+        <div class="tab" onclick="showTab('login')"><i class="fas fa-sign-in-alt"></i> Login</div>
+        <div class="tab" onclick="showTab('events')"><i class="far fa-calendar-alt"></i> Events</div>
+        <div class="tab" onclick="showTab('users')"><i class="fas fa-users"></i> Users</div>
+        <div class="tab" onclick="showTab('departments')"><i class="fas fa-building"></i> Departments</div>
+        <div class="tab" onclick="showTab('attendance')"><i class="fas fa-clipboard-check"></i> Attendance</div>
+        <div class="tab" onclick="showTab('finance')"><i class="fas fa-money-bill-wave"></i> Finance</div>
+        <div class="tab" onclick="showTab('reports')"><i class="fas fa-chart-bar"></i> Reports</div>
+    </div>
+
+    <!-- Register Form -->
+    <div id="register" class="tab-content active">
+        <div class="container">
+            <h2>Register New User</h2>
+            <form id="registerForm">
+                <input type="text" name="name" placeholder="Full Name" required>
+                <input type="text" name="user_name" placeholder="Username" required>
+                <input type="email" name="email" placeholder="Email" required>
+                <input type="password" name="password" placeholder="Password (min 8 characters)" required>
+                <select name="role" required>
+                    <option value="user">User</option>
+                    <option value="admin">Admin</option>
+                    <option value="event_manager">Event Manager</option>
+                </select>
+                <button type="submit">Register</button>
+            </form>
+            <div class="response" id="registerResponse"></div>
+        </div>
+    </div>
+
+    <!-- Login Form -->
+    <div id="login" class="tab-content">
+        <div class="container">
+            <h2>Login</h2>
+            <form id="loginForm">
+                <input type="email" name="email" placeholder="Email" required>
+                <input type="password" name="password" placeholder="Password" required>
+                <button type="submit">Login</button>
+            </form>
+            <div class="response" id="loginResponse"></div>
+        </div>
+    </div>
+
+    <!-- Events Section -->
+    <div id="events" class="tab-content">
+        <div class="container">
+            <div class="tab-buttons">
+                <button class="sub-tab active" onclick="showSubTab('createEvent')">Create Event</button>
+                <button class="sub-tab" onclick="showSubTab('listEvents')">List Events</button>
+                <button class="sub-tab" onclick="showSubTab('getEvent')">Get Event</button>
+                <button class="sub-tab" onclick="showSubTab('updateEvent')">Update Event</button>
+                <button class="sub-tab" onclick="showSubTab('deleteEvent')">Delete Event</button>
+            </div>
+
+            <!-- Create Event -->
+            <div id="createEvent" class="sub-tab-content active">
+                <h2><i class="fas fa-plus-circle"></i> Create New Event</h2>
+                <form id="createEventForm">
+                    <input type="text" name="title" placeholder="Event Title" required>
+                    <textarea name="description" placeholder="Event Description" rows="3" required></textarea>
+                    <input type="datetime-local" name="startDate" required>
+                    <input type="datetime-local" name="endDate" required>
+                    <input type="text" name="location" placeholder="Location" required>
+                    <input type="text" name="organizer" placeholder="Organizer ID">
+                    <input type="number" name="capacity" placeholder="Capacity">
+                    <input type="text" name="category" placeholder="Category">
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Create Event</button>
+                    </div>
+                </form>
+                <div class="response" id="createEventResponse"></div>
+            </div>
+
+            <!-- List Events -->
+            <div id="listEvents" class="sub-tab-content">
+                <h2><i class="fas fa-list"></i> List Events</h2>
+                <div class="filter-options">
+                    <input type="text" id="eventSearch" placeholder="Search events...">
+                    <select id="eventStatusFilter">
+                        <option value="">All Status</option>
+                        <option value="upcoming">Upcoming</option>
+                        <option value="past">Past</option>
+                        <option value="ongoing">Ongoing</option>
+                    </select>
+                    <button onclick="listEvents()" class="btn-primary"><i class="fas fa-sync"></i> Refresh</button>
+                </div>
+                <div class="response" id="listEventsResponse"></div>
+            </div>
+
+            <!-- Get Single Event -->
+            <div id="getEvent" class="sub-tab-content">
+                <h2><i class="fas fa-search"></i> Get Event</h2>
+                <div class="form-group">
+                    <input type="text" id="eventId" placeholder="Enter Event ID">
+                    <button onclick="getEvent()" class="btn-primary"><i class="fas fa-search"></i> Get Event</button>
+                </div>
+                <div class="response" id="getEventResponse"></div>
+            </div>
+
+            <!-- Update Event -->
+            <div id="updateEvent" class="sub-tab-content">
+                <h2><i class="fas fa-edit"></i> Update Event</h2>
+                <div class="form-group">
+                    <input type="text" id="updateEventId" placeholder="Event ID to update">
+                    <button onclick="loadEventForUpdate()" class="btn-primary"><i class="fas fa-download"></i> Load Event</button>
+                </div>
+                <form id="updateEventForm" style="display: none;">
+                    <input type="hidden" id="updateId">
+                    <input type="text" id="updateTitle" name="title" placeholder="Event Title" required>
+                    <textarea id="updateDescription" name="description" placeholder="Event Description" rows="3" required></textarea>
+                    <input type="datetime-local" id="updateStartDate" name="startDate" required>
+                    <input type="datetime-local" id="updateEndDate" name="endDate" required>
+                    <input type="text" id="updateLocation" name="location" placeholder="Location" required>
+                    <div class="form-actions">
+                        <button type="button" onclick="updateEvent()" class="btn-primary"><i class="fas fa-save"></i> Update Event</button>
+                    </div>
+                </form>
+                <div class="response" id="updateEventResponse"></div>
+            </div>
+
+            <!-- Delete Event -->
+            <div id="deleteEvent" class="sub-tab-content">
+                <h2><i class="fas fa-trash-alt"></i> Delete Event</h2>
+                <div class="form-group">
+                    <input type="text" id="deleteEventId" placeholder="Enter Event ID to delete">
+                    <button onclick="deleteEvent()" class="btn-danger"><i class="fas fa-trash"></i> Delete Event</button>
+                </div>
+                <div class="response" id="deleteEventResponse"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Users Section -->
+    <div id="users" class="tab-content">
+        <div class="container">
+            <div class="tab-buttons">
+                <button class="sub-tab active" onclick="showSubTab('listUsers')">List Users</button>
+                <button class="sub-tab" onclick="showSubTab('getUser')">Get User</button>
+                <button class="sub-tab" onclick="showSubTab('updateUser')">Update User</button>
+                <button class="sub-tab" onclick="showSubTab('deleteUser')">Delete User</button>
+            </div>
+
+            <!-- List Users -->
+            <div id="listUsers" class="sub-tab-content active">
+                <h2><i class="fas fa-users"></i> List Users</h2>
+                <div class="filter-options">
+                    <input type="text" id="userSearch" placeholder="Search users...">
+                    <select id="userRoleFilter">
+                        <option value="">All Roles</option>
+                        <option value="admin">Admin</option>
+                        <option value="user">User</option>
+                        <option value="moderator">Moderator</option>
+                        <option value="event_manager">Event Manager</option>
+                    </select>
+                    <button onclick="listUsers()" class="btn-primary"><i class="fas fa-sync"></i> Refresh</button>
+                </div>
+                <div class="response" id="listUsersResponse"></div>
+            </div>
+
+            <!-- Get Single User -->
+            <div id="getUser" class="sub-tab-content">
+                <h2><i class="fas fa-user"></i> Get User</h2>
+                <div class="form-group">
+                    <input type="text" id="userId" placeholder="Enter User ID or Email">
+                    <button onclick="getUser()" class="btn-primary"><i class="fas fa-search"></i> Get User</button>
+                </div>
+                <div class="response" id="getUserResponse"></div>
+            </div>
+
+            <!-- Update User -->
+            <div id="updateUser" class="sub-tab-content">
+                <h2><i class="fas fa-user-edit"></i> Update User</h2>
+                <div class="form-group">
+                    <input type="text" id="updateUserId" placeholder="User ID to update">
+                    <button onclick="loadUserForUpdate()" class="btn-primary"><i class="fas fa-download"></i> Load User</button>
+                </div>
+                <form id="updateUserForm" style="display: none;">
+                    <input type="hidden" id="updateUserIdField">
+                    <input type="text" id="updateName" name="name" placeholder="Full Name" required>
+                    <input type="text" id="updateUsername" name="user_name" placeholder="Username">
+                    <input type="email" id="updateEmail" name="email" placeholder="Email" required>
+                    <select id="updateRole" name="role" required>
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                        <option value="moderator">Moderator</option>
+                        <option value="event_manager">Event Manager</option>
+                    </select>
+                    <input type="password" id="updatePassword" name="password" placeholder="New Password (leave blank to keep current)">
+                    <div class="form-actions">
+                        <button type="button" onclick="updateUser()" class="btn-primary"><i class="fas fa-save"></i> Update User</button>
+                    </div>
+                </form>
+                <div class="response" id="updateUserResponse"></div>
+            </div>
+
+            <!-- Delete User -->
+            <div id="deleteUser" class="sub-tab-content">
+                <h2><i class="fas fa-user-times"></i> Delete User</h2>
+                <div class="form-group">
+                    <input type="text" id="deleteUserId" placeholder="Enter User ID to delete">
+                    <button onclick="deleteUser()" class="btn-danger"><i class="fas fa-trash"></i> Delete User</button>
+                </div>
+                <div class="response" id="deleteUserResponse"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Departments Section -->
+    <div id="departments" class="tab-content">
+        <div class="container">
+            <div class="tab-buttons">
+                <button class="sub-tab active" onclick="showSubTab('createDepartment')">Create Department</button>
+                <button class="sub-tab" onclick="showSubTab('listDepartments')">List Departments</button>
+                <button class="sub-tab" onclick="showSubTab('getDepartment')">Get Department</button>
+                <button class="sub-tab" onclick="showSubTab('updateDepartment')">Update Department</button>
+                <button class="sub-tab" onclick="showSubTab('deleteDepartment')">Delete Department</button>
+            </div>
+
+            <!-- Create Department -->
+            <div id="createDepartment" class="sub-tab-content active">
+                <h2><i class="fas fa-plus-circle"></i> Create Department</h2>
+                <form id="createDepartmentForm">
+                    <input type="text" name="name" placeholder="Department Name" required>
+                    <textarea name="description" placeholder="Description" rows="3"></textarea>
+                    <input type="text" name="manager" placeholder="Manager ID (optional)">
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Create Department</button>
+                    </div>
+                </form>
+                <div class="response" id="createDepartmentResponse"></div>
+            </div>
+
+            <!-- List Departments -->
+            <div id="listDepartments" class="sub-tab-content">
+                <h2><i class="fas fa-list"></i> List Departments</h2>
+                <button onclick="listDepartments()" class="btn-primary"><i class="fas fa-sync"></i> Refresh</button>
+                <div class="response" id="listDepartmentsResponse"></div>
+            </div>
+
+            <!-- Other department sections (Get, Update, Delete) would go here -->
+        </div>
+    </div>
+
+    <!-- Attendance Section -->
+    <div id="attendance" class="tab-content">
+        <div class="container">
+            <div class="tab-buttons">
+                <button class="sub-tab active" onclick="showSubTab('markAttendance')">Mark Attendance</button>
+                <button class="sub-tab" onclick="showSubTab('listAttendance')">View Attendance</button>
+                <button class="sub-tab" onclick="showSubTab('userAttendance')">My Attendance</button>
+            </div>
+
+            <!-- Mark Attendance -->
+            <div id="markAttendance" class="sub-tab-content active">
+                <h2><i class="fas fa-user-check"></i> Mark Attendance</h2>
+                <form id="markAttendanceForm">
+                    <input type="text" name="eventId" placeholder="Event ID" required>
+                    <input type="text" name="userId" placeholder="User ID (leave empty for current user)">
+                    <select name="status" required>
+                        <option value="present">Present</option>
+                        <option value="absent">Absent</option>
+                        <option value="late">Late</option>
+                        <option value="excused">Excused</option>
+                    </select>
+                    <textarea name="notes" placeholder="Notes (optional)" rows="2"></textarea>
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary"><i class="fas fa-check-circle"></i> Mark Attendance</button>
+                    </div>
+                </form>
+                <div class="response" id="markAttendanceResponse"></div>
+            </div>
+
+            <!-- List Attendance -->
+            <div id="listAttendance" class="sub-tab-content">
+                <h2><i class="fas fa-list"></i> View Attendance</h2>
+                <div class="filter-options">
+                    <input type="text" id="eventIdFilter" placeholder="Filter by Event ID">
+                    <input type="date" id="dateFilter">
+                    <button onclick="listAttendance()" class="btn-primary"><i class="fas fa-sync"></i> Refresh</button>
+                </div>
+                <div class="response" id="listAttendanceResponse"></div>
+            </div>
+
+            <!-- User Attendance -->
+            <div id="userAttendance" class="sub-tab-content">
+                <h2><i class="fas fa-user-clock"></i> My Attendance</h2>
+                <div class="filter-options">
+                    <select id="attendanceStatusFilter">
+                        <option value="">All Status</option>
+                        <option value="present">Present</option>
+                        <option value="absent">Absent</option>
+                        <option value="late">Late</option>
+                    </select>
+                    <input type="month" id="monthFilter">
+                    <button onclick="getUserAttendance()" class="btn-primary"><i class="fas fa-sync"></i> Refresh</button>
+                </div>
+                <div class="response" id="userAttendanceResponse"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Finance Section -->
+    <div id="finance" class="tab-content">
+        <div class="container">
+            <div class="tab-buttons">
+                <button class="sub-tab active" onclick="showSubTab('createTransaction')">Create Transaction</button>
+                <button class="sub-tab" onclick="showSubTab('listTransactions')">List Transactions</button>
+                <button class="sub-tab" onclick="showSubTab('financialReports')">Financial Reports</button>
+            </div>
+
+            <!-- Create Transaction -->
+            <div id="createTransaction" class="sub-tab-content active">
+                <h2><i class="fas fa-money-bill-wave"></i> Create Transaction</h2>
+                <form id="createTransactionForm">
+                    <select name="type" required>
+                        <option value="income">Income</option>
+                        <option value="expense">Expense</option>
+                    </select>
+                    <input type="number" name="amount" placeholder="Amount" step="0.01" required>
+                    <input type="text" name="description" placeholder="Description" required>
+                    <input type="text" name="category" placeholder="Category">
+                    <input type="date" name="date" required>
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Save Transaction</button>
+                    </div>
+                </form>
+                <div class="response" id="createTransactionResponse"></div>
+            </div>
+
+            <!-- List Transactions -->
+            <div id="listTransactions" class="sub-tab-content">
+                <h2><i class="fas fa-list"></i> Transactions</h2>
+                <div class="filter-options">
+                    <select id="transactionTypeFilter">
+                        <option value="">All Types</option>
+                        <option value="income">Income</option>
+                        <option value="expense">Expense</option>
+                    </select>
+                    <input type="month" id="transactionMonthFilter">
+                    <input type="text" id="transactionSearch" placeholder="Search transactions...">
+                    <button onclick="listTransactions()" class="btn-primary"><i class="fas fa-sync"></i> Refresh</button>
+                </div>
+                <div class="response" id="listTransactionsResponse"></div>
+            </div>
+
+            <!-- Financial Reports -->
+            <div id="financialReports" class="sub-tab-content">
+                <h2><i class="fas fa-chart-pie"></i> Financial Reports</h2>
+                <div class="report-filters">
+                    <select id="reportType">
+                        <option value="summary">Summary</option>
+                        <option value="income-vs-expenses">Income vs Expenses</option>
+                        <option value="category-breakdown">Category Breakdown</option>
+                    </select>
+                    <select id="reportPeriod">
+                        <option value="current-month">Current Month</option>
+                        <option value="last-month">Last Month</option>
+                        <option value="current-year">Current Year</option>
+                        <option value="custom">Custom Range</option>
+                    </select>
+                    <div id="customDateRange" style="display: none;">
+                        <input type="date" id="startDate">
+                        <input type="date" id="endDate">
+                    </div>
+                    <button onclick="generateReport()" class="btn-primary"><i class="fas fa-chart-bar"></i> Generate Report</button>
+                </div>
+                <div class="response" id="financialReportResponse"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reports Section -->
+    <div id="reports" class="tab-content">
+        <div class="container">
+            <div class="tab-buttons">
+                <button class="sub-tab active" onclick="showSubTab('eventReports')">Event Reports</button>
+                <button class="sub-tab" onclick="showSubTab('userReports')">User Reports</button>
+                <button class="sub-tab" onclick="showSubTab('attendanceReports')">Attendance Reports</button>
+            </div>
+
+            <!-- Event Reports -->
+            <div id="eventReports" class="sub-tab-content active">
+                <h2><i class="fas fa-calendar-alt"></i> Event Reports</h2>
+                <div class="report-filters">
+                    <select id="eventReportType">
+                        <option value="upcoming">Upcoming Events</option>
+                        <option value="past">Past Events</option>
+                        <option value="attendance">Event Attendance</option>
+                    </select>
+                    <button onclick="generateEventReport()" class="btn-primary"><i class="fas fa-file-export"></i> Generate Report</button>
+                </div>
+                <div class="response" id="eventReportResponse"></div>
+            </div>
+
+            <!-- User Reports -->
+            <div id="userReports" class="sub-tab-content">
+                <h2><i class="fas fa-users"></i> User Reports</h2>
+                <div class="report-filters">
+                    <select id="userReportType">
+                        <option value="active">Active Users</option>
+                        <option value="new">New Users</option>
+                        <option value="inactive">Inactive Users</option>
+                    </select>
+                    <button onclick="generateUserReport()" class="btn-primary"><i class="fas fa-file-export"></i> Generate Report</button>
+                </div>
+                <div class="response" id="userReportResponse"></div>
+            </div>
+
+            <!-- Attendance Reports -->
+            <div id="attendanceReports" class="sub-tab-content">
+                <h2><i class="fas fa-clipboard-check"></i> Attendance Reports</h2>
+                <div class="report-filters">
+                    <select id="attendanceReportType">
+                        <option value="summary">Summary</option>
+                        <option value="user">By User</option>
+                        <option value="event">By Event</option>
+                        <option value="date">By Date Range</option>
+                    </select>
+                    <button onclick="generateAttendanceReport()" class="btn-primary"><i class="fas fa-file-export"></i> Generate Report</button>
+                </div>
+                <div class="response" id="attendanceReportResponse"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Base URL - Update this if your backend is running on a different port
+        const API_BASE_URL = 'http://localhost:5000/api';
+        
+        // Store the JWT token after login
+        let authToken = localStorage.getItem('authToken');
+        
+        // Tab switching
+        function showTab(tabId) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Deactivate all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Activate the selected tab
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+        
+        // Handle registration
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                document.getElementById('registerResponse').textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                document.getElementById('registerResponse').textContent = 'Error: ' + error.message;
+            }
+        });
+        
+        // Handle login
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                document.getElementById('loginResponse').textContent = JSON.stringify(result, null, 2);
+                
+                if (result.success && result.data.token) {
+                    authToken = result.data.token;
+                    localStorage.setItem('authToken', authToken);
+                    alert('Login successful! Token saved.');
+                }
+            } catch (error) {
+                document.getElementById('loginResponse').textContent = 'Error: ' + error.message;
+            }
+        });
+        
+        // Handle event creation
+        document.getElementById('createEventForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!authToken) {
+                alert('Please login first!');
+                showTab('login');
+                return;
+            }
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            
+            // Convert datetime-local to ISO string
+            data.startDate = new Date(data.startDate).toISOString();
+            data.endDate = new Date(data.endDate).toISOString();
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/events`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                document.getElementById('createEventResponse').textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                document.getElementById('createEventResponse').textContent = 'Error: ' + error.message;
+            }
+        });
+        
+        // List events
+        async function listEvents() {
+            if (!authToken) {
+                alert('Please login first!');
+                showTab('login');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/events`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                const result = await response.json();
+                document.getElementById('listEventsResponse').textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                document.getElementById('listEventsResponse').textContent = 'Error: ' + error.message;
+            }
+        }
+        
+        // Set default dates for event creation
+        document.addEventListener('DOMContentLoaded', () => {
+            const now = new Date();
+            const defaultStart = new Date(now.getTime() + 3600000); // 1 hour from now
+            const defaultEnd = new Date(now.getTime() + 2 * 3600000); // 2 hours from now
+            
+            // Format for datetime-local input (YYYY-MM-DDTHH:MM)
+            document.querySelector('input[name="startDate"]').value = defaultStart.toISOString().slice(0, 16);
+            document.querySelector('input[name="endDate"]').value = defaultEnd.toISOString().slice(0, 16);
+        });
+    </script>
+</body>
+</html>
