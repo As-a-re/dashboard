@@ -1,4 +1,4 @@
-import { Document, Types } from 'mongoose';
+import mongoose, { Document, Model, Types } from 'mongoose';
 
 declare global {
   namespace Express {
@@ -11,8 +11,8 @@ export interface IUser extends Document {
   password: string;
   name: string;
   user_name?: string;
-  role: 'admin' | 'user' | 'moderator';
-  department?: string;
+  role: 'admin' | 'user' | 'moderator' | 'manager' | 'department_head';
+  department?: string | Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
   comparePassword?(candidatePassword: string): Promise<boolean>;
@@ -28,18 +28,30 @@ export interface IEvent {
   organizer: number | IUser;
   attendees: number[] | IUser[];
   status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
+  registrationDeadline?: Date;
+  maxAttendees?: number;
   createdAt: Date;
   updatedAt: Date;
+  image?: string; 
+  
+  // Instance methods
+  isRegistrationOpen: () => boolean;
+  isFull: () => boolean;
 }
 
-export interface IDepartment {
-  id: number;
+export interface IDepartment extends Document {
   name: string;
   description?: string;
-  head: number | IUser;
-  members: number[] | IUser[];
+  head: Types.ObjectId | IUser;
+  members: Types.ObjectId[] | IUser[];
+  isActive: boolean;
+  contactEmail?: string;
+  contactPhone?: string;
   createdAt: Date;
   updatedAt: Date;
+  memberCount?: number;
+  isDepartmentHead(userId: string): boolean;
+  isMember(userId: string): boolean;
 }
 
 export interface IAttendance extends Document {
@@ -54,19 +66,34 @@ export interface IAttendance extends Document {
   updatedAt: Date;
 }
 
-export interface IFinance {
+export interface IFinance extends Document {
   id: number;
   amount: number;
   type: 'income' | 'expense';
   category: string;
   description: string;
   date: Date;
-  recordedBy: number | IUser;
+  createdBy: Types.ObjectId | IUser;
+  event?: Types.ObjectId | IEvent;
+  department?: Types.ObjectId | IDepartment;
+  attachments?: string[];
+  paymentMethod?: string;
+  reference?: string;
+  status?: string;
   approved: boolean;
-  approvedBy?: number | IUser;
+  approvedBy?: Types.ObjectId | IUser;
   approvalDate?: Date;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface IFinanceModel extends mongoose.Model<IFinance> {
+  getFinancialSummary(query?: any): Promise<{
+    income: number;
+    expense: number;
+    balance: number;
+    totalTransactions: number;
+  }>;
 }
 
 export interface IReport {

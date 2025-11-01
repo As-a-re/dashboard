@@ -211,9 +211,12 @@ export const removeDepartmentMember = async (req: Request, res: Response, next: 
     }
     
     // Remove user from members array
-    department.members = department.members.filter(
-      memberId => memberId.toString() !== userId
-    );
+    department.members = department.members.filter(member => {
+      const memberId = typeof member === 'object' && member !== null && '_id' in member 
+        ? member._id.toString() 
+        : member.toString();
+      return memberId !== userId;
+    }) as any; 
     
     await department.save();
     

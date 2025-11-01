@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import Event from '../models/event.model';
 import { AppError } from '../middleware/error.middleware';
 import { successResponse } from '../utils/apiResponse';
+import { IEvent } from '../types';
 
 // @desc    Get all events
 // @route   GET /api/events
@@ -17,7 +18,9 @@ export const getEvents = async (req: Request, res: Response, next: NextFunction)
     let queryStr = JSON.stringify(queryObj);
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
 
-    let query = Event.find(JSON.parse(queryStr));
+    // Create base query with proper type
+    const findQuery = JSON.parse(queryStr);
+    let query = Event.find<IEvent>(findQuery);
 
     // Sorting
     if (req.query.sort) {
@@ -40,12 +43,15 @@ export const getEvents = async (req: Request, res: Response, next: NextFunction)
     const limit = parseInt(req.query.limit as string, 10) || 10;
     const skip = (page - 1) * limit;
 
-    const total = await Event.countDocuments(JSON.parse(queryStr));
-    query = query.skip(skip).limit(limit);
-
-    // Execute query
-    const events = await query.populate('organizer', 'name email')
-                            .populate('attendees', 'name email');
+    const total = await Event.countDocuments(findQuery);
+    
+    // Execute query with proper type casting
+    const events = await query
+      .skip(skip)
+      .limit(limit)
+      .populate<{ organizer: { _id: any; name: string; email: string } }>('organizer', 'name email')
+      .populate<{ attendees: Array<{ _id: any; name: string; email: string }> }>('attendees', 'name email')
+      .exec();
 
     successResponse(res, {
       results: events.length,

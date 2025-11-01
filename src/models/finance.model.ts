@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { IFinance } from '../types';
+import { IFinance, IFinanceModel } from '../types';
 
 const financeSchema = new Schema<IFinance>(
   {
@@ -127,6 +127,6 @@ financeSchema.statics.getFinancialSummary = async function(query = {}) {
   return result[0] || { income: 0, expense: 0, balance: 0, totalTransactions: 0 };
 };
 
-const Finance = mongoose.model<IFinance>('Finance', financeSchema);
+const Finance = mongoose.model<IFinance, IFinanceModel>('Finance', financeSchema);
 
 export default Finance;

@@ -3,7 +3,6 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
-import path from 'path';
 
 // Routes
 import departmentRoutes from './routes/department.routes';
@@ -14,6 +13,9 @@ import financeRoutes from './routes/finance.routes';
 import communicationRoutes from './routes/communication.routes';
 import reportRoutes from './routes/report.routes';
 import authRoutes from './routes/auth.routes';
+import announcementRoutes from './routes/announcements.routes';
+import notificationRoutes from './routes/notifications.routes';
+import messageRoutes from './routes/message.routes';
 
 // Load environment variables
 dotenv.config();
@@ -52,6 +54,9 @@ app.use('/api/finance', financeRoutes);
 app.use('/api/communication', communicationRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/announcements', announcementRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/messages', messageRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req: Request, res: Response) => {

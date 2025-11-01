@@ -37,28 +37,43 @@ const handleJWTError = () => new AppError('Invalid token. Please log in again!',
 const handleJWTExpiredError = () => new AppError('Your token has expired! Please log in again.', 401);
 
 const sendErrorDev = (err: any, res: Response) => {
-  res.status(err.statusCode).json({
-    status: err.status,
-    error: err,
+  const response: IApiResponse = {
+    success: false,
+    statusCode: err.statusCode,
     message: err.message,
-    stack: err.stack,
-  } as IApiResponse);
+    error: {
+      status: err.status,
+      stack: err.stack,
+      ...err
+    },
+    timestamp: new Date()
+  };
+  
+  res.status(err.statusCode).json(response);
 };
 
 const sendErrorProd = (err: any, res: Response) => {
   // Operational, trusted error: send message to client
   if (err.isOperational) {
-    res.status(err.statusCode).json({
-      status: err.status,
+    const response: IApiResponse = {
+      success: false,
+      statusCode: err.statusCode,
       message: err.message,
-    } as IApiResponse);
+      error: err.status,
+      timestamp: new Date()
+    };
+    res.status(err.statusCode).json(response);
   } else {
     // Programming or other unknown error: don't leak error details
     console.error('ERROR 💥', err);
-    res.status(500).json({
-      status: 'error',
+    const response: IApiResponse = {
+      success: false,
+      statusCode: 500,
       message: 'Something went very wrong!',
-    } as IApiResponse);
+      error: 'Internal Server Error',
+      timestamp: new Date()
+    };
+    res.status(500).json(response);
   }
 };
 

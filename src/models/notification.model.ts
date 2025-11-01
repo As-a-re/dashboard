@@ -23,6 +23,8 @@ export interface INotification extends Document {
   priority: 'low' | 'medium' | 'high';
   expiresAt?: Date;
   data?: Record<string, any>;
+  createdAt: Date;  
+  updatedAt: Date; 
 }
 
 const notificationSchema = new Schema<INotification>(

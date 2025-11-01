@@ -155,32 +155,30 @@ messageSchema.virtual('replyCount', {
 });
 
 // Pre-save hook to handle thread logic
-messageSchema.pre('save', async function(next) {
+messageSchema.pre<IMessage>('save', async function (next) {
   if (this.parentMessage && !this.threadId) {
-    // If this is a reply, get the parent message
-    const parent = await this.model('Message').findById(this.parentMessage);
+    const parent = await mongoose.model<IMessage>('Message').findById(this.parentMessage);
     if (parent) {
       this.threadId = parent.threadId || parent._id;
-      this.isThread = false; // Only the first message in a thread is marked as isThread: true
+      this.isThread = false;
     }
   }
   next();
 });
 
 // Post-save hook to update thread info on parent
-messageSchema.post('save', async function(doc) {
+messageSchema.post<IMessage>('save', async function (doc) {
   if (doc.isThread && !doc.threadId) {
-    // If this is a new thread, set threadId to self
     doc.threadId = doc._id;
     await doc.save();
   } else if (doc.parentMessage) {
-    // Update parent's hasReplies flag
-    await this.model('Message').updateOne(
+    await mongoose.model<IMessage>('Message').updateOne(
       { _id: doc.parentMessage },
       { $set: { isThread: true } }
     );
   }
 });
+
 
 const Message = mongoose.model<IMessage>('Message', messageSchema);
 

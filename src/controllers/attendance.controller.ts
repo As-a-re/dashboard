@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import Attendance from '../models/attendance.model';
 import Event from '../models/event.model';
+import User from '../models/user.model';
 import { AppError } from '../middleware/error.middleware';
 import { successResponse } from '../utils/apiResponse';
 
@@ -74,11 +75,20 @@ export const getAttendanceByEvent = async (req: Request, res: Response, next: Ne
     }
     
     // Check if user is authorized (admin, event organizer, or department head)
-    const isAuthorized = req.user?.role === 'admin' || 
-                        event.organizer.toString() === req.user?.id ||
-                        (req.user?.department && 
-                         event.organizer.department?.toString() === req.user.department.toString() &&
-                         req.user.role === 'department_head');
+    const isAdmin = req.user?.role === 'admin';
+    const isOrganizer = event.organizer.toString() === req.user?.id;
+    
+    // For department head check, we need to populate the organizer's department
+    let isDepartmentHead = false;
+    if (req.user?.role === 'department_head' && req.user.department) {
+      // Fetch the organizer's details to get their department
+      const organizer = await User.findById(event.organizer).select('department').lean();
+      if (organizer && 'department' in organizer) {
+        isDepartmentHead = organizer.department?.toString() === req.user.department.toString();
+      }
+    }
+    
+    const isAuthorized = isAdmin || isOrganizer || isDepartmentHead;
     
     if (!isAuthorized) {
       return next(new AppError('Not authorized to view attendance for this event', 403));
@@ -216,11 +226,20 @@ export const getAttendanceStats = async (req: Request, res: Response, next: Next
     }
     
     // Check if user is authorized (admin, event organizer, or department head)
-    const isAuthorized = req.user?.role === 'admin' || 
-                        event.organizer.toString() === req.user?.id ||
-                        (req.user?.department && 
-                         event.organizer.department?.toString() === req.user.department.toString() &&
-                         req.user.role === 'department_head');
+    const isAdmin = req.user?.role === 'admin';
+    const isOrganizer = event.organizer.toString() === req.user?.id;
+    
+    // For department head check, we need to populate the organizer's department
+    let isDepartmentHead = false;
+    if (req.user?.role === 'department_head' && req.user.department) {
+      // Fetch the organizer's details to get their department
+      const organizer = await User.findById(event.organizer).select('department').lean();
+      if (organizer && 'department' in organizer) {
+        isDepartmentHead = organizer.department?.toString() === req.user.department.toString();
+      }
+    }
+    
+    const isAuthorized = isAdmin || isOrganizer || isDepartmentHead;
     
     if (!isAuthorized) {
       return next(new AppError('Not authorized to view attendance stats for this event', 403));
